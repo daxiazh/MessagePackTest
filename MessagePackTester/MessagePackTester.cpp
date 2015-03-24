@@ -33,7 +33,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	listen(listeningSocket, 5);  //开始监听，最多可以处理的连接请求为５ 
 	int ClientAddrLen = sizeof(struct sockaddr_in);   //struct sockaddr_in结构的大小
 
-	printf("Wait for connecting ...");
+	printf("Wait for connecting ...\n");
 
 	//****等待连接，一直阻塞到获得连接 
 	//返回连接的socket
@@ -42,11 +42,11 @@ int _tmain(int argc, _TCHAR* argv[])
 	//参数３　第２个参数的结构大小　这里必须给的是地址
 	newConnection = accept(listeningSocket, (SOCKADDR*)(&clientAddr), &ClientAddrLen);
 
-	printf("Test send and recive data ...");
+	printf("Test send and recive data ...\n");
 
 	SendAndReciveData();
 
-	printf("Test complete.");
+	printf("Test complete.\n");
 
 	//关闭socket
 	closesocket(newConnection);
@@ -67,18 +67,18 @@ void TestSendAndReciveData()
 
 	send(newConnection, sbuf.data(), sbuf.size(), 0);
 
-	recv(newConnection, sbuf.data(), sbuf.size(), 0);
+	char szRecvData[512];
+	int nRecvSize = recv(newConnection, szRecvData, 512, 0);
 
 	msgpack::unpacked msg;
-	msgpack::unpack(&msg, sbuf.data(), sbuf.size());
+	
+	msgpack::unpack(&msg, szRecvData, nRecvSize);
 
 	msgpack::object obj = msg.get();
 
 	// you can convert object to myclass directly
 	T _RevData;
 	obj.convert(&_RevData);
-
-	assert(_SendData == _RevData);
 }
 
 // 描述：	用于测试消息传递的结构
@@ -86,11 +86,13 @@ class CTestSendAndReciveData
 {
 	int		m_nPara1;
 	float	m_fPara1;
+	std::string m_strName;
 public:
 	CTestSendAndReciveData()
 	{
 		m_nPara1 = 5;
 		m_fPara1 = 10.2f;
+		m_strName = "XiongMin";
 	}
 
 	bool operator==(CTestSendAndReciveData& other)
@@ -99,7 +101,7 @@ public:
 			m_fPara1 == other.m_fPara1;
 	}
 
-	MSGPACK_DEFINE(m_nPara1, m_fPara1);
+	MSGPACK_DEFINE(m_nPara1, m_fPara1, m_strName);
 };
 
 
